@@ -1,0 +1,10 @@
+.vscode/
+node_modules/
+logs
+dist-server/
+eth.env
+rtc.env
+bnb.env
+btc.env
+private-key.pem
+rabbitmq.conf

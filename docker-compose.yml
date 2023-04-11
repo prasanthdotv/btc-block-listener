@@ -1,0 +1,44 @@
+version: "3"
+services:
+  mongo:
+    container_name: wallet-listeners-mongo
+    image: "mongo:4"
+    restart: always
+
+  rabbitmq:
+    container_name: btc-wallet-listener-rabbitmq
+    image: "rabbitmq:3-management"
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    restart: always
+  btc-address-listener:
+    container_name: btc-address-listener
+    build:
+      context: ./address-listener
+      dockerfile: dev.Dockerfile
+    image: btc-address-listener
+    volumes:
+      - ./address-listener:/usr/app/
+      - /usr/app/node-modules
+    depends_on:
+      - mongo
+      - rabbitmq
+    command: bash -c "npm run seed-mongo && npm run dev"
+    env_file:
+      - btc.env
+  btc-update-balance:
+    container_name: btc-update-balance
+    build:
+      context: ./update-balance
+      dockerfile: dev.Dockerfile
+    image: btc-update-balance
+    volumes:
+      - ./update-balance:/usr/app/
+      - /usr/app/node-modules
+    depends_on:
+      - rabbitmq
+      - btc-address-listener
+      - mongo
+    command: npm run dev
+    env_file:
+      - btc.env
